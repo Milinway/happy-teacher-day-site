@@ -53,7 +53,7 @@ play([
         "dari sekian banyak nya guru DHBS, ini ",
         { hl: "spesial", color: "#1c2a7a", then: () => fx.flash("#3b5bdb") },
         " buat ust ku yang paling ",
-        { hl: "ASIKX", color: "#1ea34a", then: () => fx.rain(ctx, ["🤘", "🔥", "✨"], { count: 26 }) },
+        { hl: "ASIKX", color: "#1ea34a", then: () => fx.rain(ctx, ["🤙", "🔥", "✨"], { count: 26 }) },
       ]);
       await ctx.sleep(2600);
     },
