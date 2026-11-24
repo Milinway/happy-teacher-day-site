@@ -1,0 +1,125 @@
+/* ---------- tokens: change these first ---------- */
+:root {
+  --bg: #fff;
+  --ink: #111;
+  --font: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --fs-line: clamp(1.4rem, 4.2vw, 2.6rem);
+  --fade: 600ms;
+}
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); font-family: var(--font); }
+
+/* ---------- stage & scene switching ---------- */
+#stage { position: fixed; inset: 0; }
+.scene {
+  position: absolute; inset: 0; padding: 6vmin;
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity var(--fade) ease, visibility 0s linear var(--fade);
+}
+.scene.active { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
+.scene.center { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.5vmin; text-align: center; }
+
+/* ---------- text ---------- */
+.line { font-size: var(--fs-line); font-weight: 700; line-height: 1.3; max-width: 22ch; min-height: 1.3em; }
+.line.wide { max-width: 30ch; }
+.caret::after { content: ""; display: inline-block; width: .08em; height: 1em; margin-left: .08em; background: currentColor; vertical-align: -.1em; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* highlight box whose words pop in one by one (see engine popWords) */
+.hl { display: inline-block; padding: 0 .3em; border-radius: .2em; color: #fff; background: var(--hl, #1c2a7a); }
+.hidden { opacity: 0; transform: scale(.6); }
+.pop { animation: pop 520ms cubic-bezier(.2, 1.6, .4, 1) forwards; }
+@keyframes pop { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: scale(1); } }
+.fade-in { animation: fadeIn var(--fade) ease forwards; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(1.5vmin); } to { opacity: 1; transform: none; } }
+
+/* ---------- effects layer (shared by all scenes) ---------- */
+#fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
+#flash { position: fixed; inset: 0; z-index: 40; pointer-events: none; opacity: 0; background: var(--flash, #3b5bdb); }
+#flash.on { animation: flash 800ms cubic-bezier(.22, 1, .36, 1) both; }
+@keyframes flash {
+  0% { opacity: 0; }
+  18% { opacity: .9; }
+  38% { opacity: .9; }
+  100% { opacity: 0; }
+}
+.rain-item { position: fixed; top: -10vh; z-index: 45; pointer-events: none; will-change: transform; animation: fall linear forwards; }
+@keyframes fall { to { transform: translateY(115vh) rotate(var(--rot, 0deg)); } }
+
+/* ---------- looping horizontal collage: put the image set in the track TWICE ---------- */
+.marquee { position: absolute; inset: 0; overflow: hidden; }
+.marquee-track { display: flex; width: max-content; height: 100%; animation: slide var(--dur, 60s) linear infinite; will-change: transform; }
+.marquee-track img { flex: 0 0 100vw; width: 100vw; height: 100%; object-fit: cover; }
+@keyframes slide { to { transform: translateX(-50%); } }
+
+/* ---------- falling text background (columns hold the text twice) ---------- */
+.rain-text { position: absolute; inset: 0; overflow: hidden; display: flex; justify-content: center; }
+.rain-text .col { display: flex; flex-direction: column; align-items: center; gap: .38em; animation: colfall var(--dur, 14s) linear infinite; font-weight: 800; font-size: clamp(1.1rem, 5vw, 4rem); line-height: 1.2; letter-spacing: .08em; opacity: .35; white-space: nowrap; will-change: transform; transform: translate3d(0, -50%, 0); }
+@keyframes colfall { from { transform: translate3d(0, -50%, 0); } to { transform: translate3d(0, 0, 0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track, .rain-text .col { animation-duration: 0s; }
+}
+
+#audio-toggle { position: fixed; right: 12px; bottom: 12px; z-index: 60; width: 40px; height: 40px; border-radius: 50%; border: 0; background: #0008; color: #fff; font-size: 1.1rem; cursor: pointer; }
+#next-scene { position: fixed; right: max(18px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); z-index: 60; border: 1px solid #ffffff80; border-radius: 999px; padding: .8em 1.15em; color: #fff; background: #171b35d9; font: 600 1rem var(--font); box-shadow: 0 8px 28px #0003; cursor: pointer; transition: transform 180ms ease, background 180ms ease, opacity 180ms ease; }
+#next-scene:hover { transform: translateY(-2px); background: #263b91; }
+#next-scene:active { transform: translateY(0); }
+#next-scene:focus-visible { outline: 3px solid #f5d76e; outline-offset: 3px; }
+#next-scene[hidden] { display: none; }
+#restart-site { position: fixed; right: max(18px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); z-index: 60; border: 1px solid #ffffff80; border-radius: 999px; padding: .8em 1.15em; color: #fff; background: #263b91; font: 600 1rem var(--font); box-shadow: 0 8px 28px #0005; cursor: pointer; transition: transform 180ms ease, background 180ms ease; }
+#restart-site:hover { transform: translateY(-2px); background: #3859c8; }
+#restart-site:active { transform: translateY(0); }
+#restart-site:focus-visible { outline: 3px solid #f5d76e; outline-offset: 3px; }
+#restart-site[hidden] { display: none; }
+#audio-toggle[aria-pressed="true"] { background: #1c7c3a; }
+
+/* ======== project: Happy Teacher Day ======== */
+:root { --gold: #b4a433; --panel: #333230; --font: "Poppins", "Segoe UI", system-ui, sans-serif; }
+.big { font-size: clamp(2rem, 8vw, 5rem); font-weight: 800; --hl: #1c2a7a; padding: .05em .35em; }
+.line.wide { max-width: 26ch; }
+
+/* scene 3: calendar */
+#cal { width: min(40vmin, 240px); margin-top: 1vmin; }
+#cal:not([hidden]) { animation: fadeIn var(--fade) ease both; }
+#lens { transform: translate(40px, 80px); }
+#lens.go { animation: search 3.2s ease-in-out forwards; }
+@keyframes search { 0%{transform:translate(40px,80px)} 25%{transform:translate(140px,80px)} 50%{transform:translate(60px,120px)} 75%{transform:translate(140px,150px)} 100%{transform:translate(110px,140px)} }
+#tick { stroke-dasharray: 1; stroke-dashoffset: 1; }
+#tick.draw { transition: stroke-dashoffset .6s ease; stroke-dashoffset: 0; }
+
+/* scenes 6 & 10: hero in front */
+.hero { position: absolute; left: 50%; bottom: 0; height: 82%; max-width: 92%; object-fit: contain; transform: translateX(-50%); }
+.hero.enter { animation: heroIn 900ms cubic-bezier(.2, .9, .3, 1) both; }
+@keyframes heroIn { from { opacity: 0; transform: translate(-50%, 8%) scale(.94); } to { opacity: 1; transform: translateX(-50%); } }
+#s6 { background: #111; }
+#s6 .marquee::after { content: ""; position: absolute; inset: 0; background: #0006; }
+#s6 .marquee-track { animation-duration: 30s; }
+#s10 { background: #1a1a1a; color: #fff; }
+
+/* split scenes */
+.split { padding: 0; display: grid; grid-template-columns: minmax(0, 38fr) minmax(0, 62fr); }
+.split .photo { position: relative; overflow: hidden; background: linear-gradient(160deg, #f8d778, #b99527); }
+.split .photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, #1110 48%, #15172d85); }
+#s7 .photo { background: #d7e5ff url(../img/p-stairs.jpg) center / cover no-repeat; }
+#s8 .photo { background: #d8c8a9 url(../img/p-group.jpg) center / cover no-repeat; }
+#s9 .photo { background: #d7e5ff url(../img/p-kid.jpg) center / cover no-repeat; }
+.split .panel { position: relative; overflow: hidden; background: radial-gradient(ellipse at 90% 8%, #ffffff12, transparent 38%), linear-gradient(145deg, #35343b, #242632); color: #fff; padding: 5vmin; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 2.1vmin; text-align: center; }
+.split .panel::before { content: ""; position: absolute; width: min(60vw, 420px); aspect-ratio: 1; border: 1px solid #ffffff12; border-radius: 50%; right: -24%; bottom: -52%; pointer-events: none; }
+.eyebrow { color: #f1d77b; font-size: clamp(.65rem, 1.3vw, .85rem); font-weight: 800; letter-spacing: .22em; text-transform: uppercase; }
+.title { font-size: clamp(1.6rem, 4.4vw, 3rem); font-weight: 700; }
+.note { font-size: clamp(.9rem, 1.9vw, 1.35rem); max-width: 34ch; line-height: 1.55; color: #e5e5ea; }
+.para { font-size: clamp(.85rem, 2.1vw, 1.5rem); line-height: 1.65; text-align: left; max-width: 46ch; color: #f0eff5; text-wrap: pretty; }
+.signature { align-self: flex-end; color: #f1d77b; font-family: Georgia, serif; font-size: clamp(1rem, 2vw, 1.35rem); font-style: italic; }
+.ringwrap { position: relative; width: min(100%, 34vh); }
+.ringwrap img { width: 100%; display: block; border: 7px solid #ffffff; border-radius: 1.2vmin; box-shadow: 0 1.5vmin 4vmin #0006; }
+.ring { position: absolute; width: 24%; aspect-ratio: 1; border: .6vmin solid #e5242b; border-radius: 50%; left: 72%; top: 33%; transform: scale(0); }
+.ring.pop { animation: pop 520ms cubic-bezier(.2, 1.6, .4, 1) forwards; }
+.polaroids { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6vmin; width: min(100%, 92vh); perspective: 900px; }
+.polaroids img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border: .7vmin solid #fff; box-shadow: 0 .6vmin 2vmin #0006; transform: rotate(var(--r, 0deg)); opacity: 0; }
+.polaroids img.fade-in { animation: fadeIn var(--fade) ease forwards; animation-delay: calc(var(--i) * 140ms); }
+@media (max-width: 700px) {
+  .split { grid-template-columns: 1fr; grid-template-rows: 38fr 62fr; }
+  .split .photo { background-size: auto 100%; }
+  .ringwrap { width: min(100%, 26vh); }
+}
